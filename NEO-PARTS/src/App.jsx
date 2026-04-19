@@ -1,6 +1,6 @@
 import { products } from "./mockdata/products";
 import "./index.css";
-import ProductCard from "./molecules/ProductCard";
+import ProductCard from "./components/molecules/ProductCard";
 function App() {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
