@@ -7,7 +7,7 @@ import CartSummary from "./components/organisms/CartSummary";
 function App() {
   const cart = useCartStore((state) => state.cart);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
-
+  const clearCart = useCartStore((state) => state.clearCart);
   return (
     <>
    
@@ -15,7 +15,7 @@ function App() {
       <h1 className="text-4xl font-bold mb-8 text-center">Nexo.io</h1>
       <p>Carrito: {getTotalItems()}</p>
       <div>
-        <CartSummary />
+        <CartSummary/>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10">
         {products.map((product) => (

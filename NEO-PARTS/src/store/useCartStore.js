@@ -1,6 +1,6 @@
 import { create } from "zustand";
-
-const useCartStore = create((set, get) => ({
+import {persist} from "zustand/middleware";
+const useCartStore = create(persist((set, get) => ({
   cart: [],
 
   addToCart: (product) => {
@@ -32,6 +32,8 @@ const useCartStore = create((set, get) => ({
 
   getTotalPrice: () =>
     get().cart.reduce((total, item) => total + item.price * item.quantity, 0),
+}), {
+  name: "cart-storage",
 }));
 
 export default useCartStore;

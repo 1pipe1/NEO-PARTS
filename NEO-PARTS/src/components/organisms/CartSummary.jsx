@@ -2,8 +2,10 @@ import useCartStore from "../../store/useCartStore";
 
 const CartSummary = () => {
   const cart = useCartStore((state) => state.cart);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const clearCart = useCartStore((state) => state.clearCart);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
-  // Sumamos todos los precios. Usamos Number() para evitar que el motor "patee"
+
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
@@ -12,19 +14,40 @@ const CartSummary = () => {
         Resumen de Venta
       </h2>
 
-      <div className="flex justify-between text-gray-300 mb-2">
+      {/* Lista de items con botón quitar */}
+      {cart.map((item) => (
+        <div
+          key={item.id}
+          className="flex justify-between items-center mb-2 text-sm text-gray-300"
+        >
+          <span>
+            {item.name} × {item.quantity}
+          </span>
+          <div className="flex items-center gap-2">
+            <span>${(item.price * item.quantity).toLocaleString("es-CO")}</span>
+            <button
+              onClick={() => removeFromCart(item.id)}
+              className="text-red-400 hover:text-red-300 font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      ))}
+
+      <div className="border-t border-gray-700 pt-4 mt-4 flex justify-between text-gray-300 mb-2">
         <span>Productos:</span>
         <span>{getTotalItems()}</span>
       </div>
 
-      <div className="flex justify-between text-2xl font-bold text-green-400 border-t border-gray-700 pt-4">
+      <div className="flex justify-between text-2xl font-bold text-green-400">
         <span>Total:</span>
         <span>${total.toLocaleString("es-CO")}</span>
       </div>
 
       <button
+        onClick={clearCart}
         className="w-full mt-6 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl transition-all"
-        onClick={() => alert("¡Venta registrada con éxito!")}
       >
         Finalizar Compra
       </button>
