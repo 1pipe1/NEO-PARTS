@@ -2,6 +2,8 @@ import useCartStore from "../../store/useCartStore";
 import SearchBar from "../atoms/SearchBar";
 
 const Navbar = ({ search, onSearchChange }) => {
+  // Suscribirse directamente al estado del carrito para mejor reactividad
+  const cart = useCartStore((state) => state.cart);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
 
   return (
