@@ -119,4 +119,14 @@ export const products = [
     stock: 20,
     brand: "Jet",
   },
+  {
+    id: 13,
+    name: "Galletas Noel 300g",
+    category: "Snacks",
+    price: 3500,
+    image: "/images/products/galletas.jpg",
+    description: "Galletas Noel de 300 gramos.",
+    stock: 30,
+    brand: "Noel",
+  },
 ];
