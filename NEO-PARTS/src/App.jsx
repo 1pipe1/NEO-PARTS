@@ -6,6 +6,7 @@ import CartSummary from "./components/organisms/CartSummary";
 import Navbar from "./components/organisms/Navbar";
 import useCartStore from "./store/useCartStore";
 import AuthPage from "./pages/AuthPage";
+import CheckoutPage from "./pages/CheckoutPage";
 import useAuthStore from "./store/useAuthStore";
 
 const PRODUCTS_PER_PAGE = 6;
@@ -13,6 +14,7 @@ const PRODUCTS_PER_PAGE = 6;
 function App() {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showCheckout, setShowCheckout] = useState(false); // Estado para mostrar/ocultar checkout
 
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
@@ -30,8 +32,14 @@ function App() {
     currentPage * PRODUCTS_PER_PAGE,
   );
 
-  if (!isAuthenticated) {
+  // Si no hay sesión, mostrar AuthPage
+  if (!user || !isAuthenticated) {
     return <AuthPage />;
+  }
+
+  // Si showCheckout es true, mostrar CheckoutPage
+  if (showCheckout) {
+    return <CheckoutPage />;
   }
 
   return (
@@ -58,7 +66,7 @@ function App() {
           </button>
         </div>
 
-        <CartSummary />
+        <CartSummary onCheckout={() => setShowCheckout(true)} />
 
         {filteredProducts.length === 0 && (
           <p className="text-center text-gray-400 mt-8">
