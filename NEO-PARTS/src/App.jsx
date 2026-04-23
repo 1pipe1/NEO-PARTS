@@ -52,8 +52,8 @@ function App() {
         }}
       />
 
-      <div className="p-8">
-        <div className="flex justify-between items-center mb-6">
+      <div className="p-4 md:p-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-6">
           <h2 className="text-xl font-semibold">
             Bienvenido,{" "}
             <span className="text-orange-500">{user?.name || "Usuario"}</span>
@@ -66,19 +66,13 @@ function App() {
           </button>
         </div>
 
-        <CartSummary onCheckout={() => setShowCheckout(true)} />
-
-        {filteredProducts.length === 0 && (
-          <p className="text-center text-gray-400 mt-8">
-            No se encontraron productos 😕
-          </p>
-        )}
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-10">
           {paginatedProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
+
+        <CartSummary onCheckout={() => setShowCheckout(true)} />
 
         {totalPages > 1 && (
           <div className="flex justify-center gap-2 mt-6">

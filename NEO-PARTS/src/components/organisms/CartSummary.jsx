@@ -17,7 +17,7 @@ const CartSummary = ({ onCheckout }) => {
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-xl max-w-sm ml-auto">
+    <div className={"bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-700 shadow-xl w-full md:max-w-sm md:ml-auto"}>
       <h2 className="text-xl font-bold text-orange-500 mb-4">
         Resumen de Venta
       </h2>
