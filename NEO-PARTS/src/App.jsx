@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { products } from "./mockdata/products";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import "./index.css";
 import ProductCard from "./components/molecules/ProductCard";
 import CartSummary from "./components/organisms/CartSummary";
@@ -12,6 +12,14 @@ import useAuthStore from "./store/useAuthStore";
 const PRODUCTS_PER_PAGE = 6;
 
 function App() {
+  const [products, setProducts] = useState([]); 
+  
+  useEffect(() => {
+    axios.get("https://fakestoreapi.com/products").then((response) => {
+      setProducts(response.data);
+    });
+  }, []);
+
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showCheckout, setShowCheckout] = useState(false); // Estado para mostrar/ocultar checkout
@@ -23,7 +31,7 @@ function App() {
   const getTotalItems = useCartStore((state) => state.getTotalItems);
 
   const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(search.toLowerCase()),
+    product.title.toLowerCase().includes(search.toLowerCase()),
   );
 
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
