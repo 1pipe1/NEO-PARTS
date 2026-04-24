@@ -1,16 +1,16 @@
-import { useState } from 'react';
-import useAuthStore from '../store/useAuthStore';
+import { useState } from "react";
+import useAuthStore from "../store/useAuthStore";
 
 // Página de autenticación con formularios de login y registro
 const AuthPage = () => {
   // Estado local para controlar si mostramos formulario de login o registro
   const [isLogin, setIsLogin] = useState(true);
-  
+
   // Estados para los campos del formulario
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [error, setError] = useState(''); // Para mostrar mensajes de error
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState(""); // Para mostrar mensajes de error
 
   // Obtener funciones del store de autenticación
   const login = useAuthStore((state) => state.login);
@@ -19,18 +19,20 @@ const AuthPage = () => {
   // Función para manejar el envío del formulario
   const handleSubmit = (e) => {
     e.preventDefault(); // Prevenir recarga de la página
-    setError(''); // Limpiar errores anteriores
+    setError(""); // Limpiar errores anteriores
 
     if (isLogin) {
       // Lógica de login
       const success = login(email, password);
       if (!success) {
-        setError('Credenciales inválidas. El password debe tener al menos 6 caracteres.');
+        setError(
+          "Credenciales inválidas. El password debe tener al menos 6 caracteres.",
+        );
       }
     } else {
       // Lógica de registro
       if (!name.trim()) {
-        setError('El nombre es requerido');
+        setError("El nombre es requerido");
         return;
       }
       register(email, password, name);
@@ -72,7 +74,11 @@ const AuthPage = () => {
           )}
 
           <div class="bg-orange-500/10 border border-orange-500/50 text-orange-500 text-[14px] py-1 px-2 rounded mb-4 text-center">
-            Ingresa con: Email: <strong>demo@example.com</strong> y Password: <strong>123456</strong>
+            Prueba Ingreso
+            <br />
+            Email: <strong>demo@example.com</strong>
+            <br />
+            Password: <strong>123456</strong>
           </div>
           {/* Campo de email */}
           <div>
