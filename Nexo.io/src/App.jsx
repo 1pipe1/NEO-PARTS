@@ -61,10 +61,10 @@ function App() {
   // Mostrar loading
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0F4F8] text-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl animate-spin mb-4">⏳</div>
-          <p className="text-gray-400">Cargando productos...</p>
+          <p className="text-gray-600">Cargando productos...</p>
         </div>
       </div>
     );
@@ -73,11 +73,11 @@ function App() {
   // Mostrar error
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
-        <div className="bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-700 text-center max-w-md">
+      <div className="min-h-screen bg-[#F0F4F8] text-gray-900 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200 text-center max-w-md">
           <div className="text-6xl mb-4">❌</div>
           <h2 className="text-2xl font-bold text-red-500 mb-4">Error</h2>
-          <p className="text-gray-300 mb-6">{error}</p>
+          <p className="text-gray-600 mb-6">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
@@ -90,7 +90,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-[#F0F4F8] text-gray-900">
       <Navbar
         search={search}
         onSearchChange={(val) => {
@@ -108,7 +108,8 @@ function App() {
           </h2>
           <button
             onClick={logout}
-            className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            style={{ backgroundColor: "#EA580C" }}
+            className="hover:opacity-90 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
           >
             Cerrar Sesión
           </button>
@@ -124,7 +125,7 @@ function App() {
         {filteredProducts.length === 0 && search && (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔍</div>
-            <p className="text-gray-400 text-lg">
+            <p className="text-gray-600 text-lg">
               No se encontraron productos para "{search}"
             </p>
             <button
@@ -132,7 +133,7 @@ function App() {
                 setSearch("");
                 setCurrentPage(1);
               }}
-              className="mt-4 text-orange-500 hover:text-orange-400 font-semibold"
+              className="mt-4 text-orange-500 hover:text-orange-600 font-semibold"
             >
               Limpiar búsqueda
             </button>
