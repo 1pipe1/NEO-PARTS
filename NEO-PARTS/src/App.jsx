@@ -8,6 +8,7 @@ import useCartStore from "./store/useCartStore";
 import AuthPage from "./pages/AuthPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import useAuthStore from "./store/useAuthStore";
+import ProductosFirebase from "./components/ProductosFirebase";
 
 const PRODUCTS_PER_PAGE = 6;
 
@@ -51,13 +52,15 @@ function App() {
   }
 
   return (
+
     <div className="min-h-screen bg-gray-900 text-white">
       <Navbar
         search={search}
         onSearchChange={(val) => {
           setSearch(val);
           setCurrentPage(1);
-        }}
+          <ProductosFirebase />;
+        }}      
       />
 
       <div className="p-4 md:p-8">
