@@ -16,11 +16,11 @@ const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
     // Overlay oscuro de fondo
     <div className="fixed inset-0 z-50">
       {/* Fondo oscuro que cierra el carrito al hacer clic */}
-      <div 
+      <div
         className="absolute inset-0 bg-black bg-opacity-50"
         onClick={onClose}
       />
-      
+
       {/* Panel del carrito que aparece desde la derecha */}
       <div className="absolute right-0 top-0 h-full w-full max-w-md bg-gray-800 shadow-xl overflow-y-auto">
         {/* Header del carrito */}
@@ -89,7 +89,7 @@ const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
                 >
                   Finalizar Compra
                 </button>
-                
+
                 <button
                   onClick={clearCart}
                   className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 rounded-lg transition-colors"
