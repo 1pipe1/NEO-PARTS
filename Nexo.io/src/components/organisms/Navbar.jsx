@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ShoppingCart } from "lucide-react";
 import useCartStore from "../../store/useCartStore";
 import SearchBar from "../atoms/SearchBar";
 import CartDropdown from "./CartDropdown";
@@ -29,7 +30,7 @@ const Navbar = ({ search, onSearchChange, onCheckout }) => {
           className="relative cursor-pointer"
           onClick={() => setIsCartOpen(true)}
         >
-          <span className="text-2xl">🛒</span>
+          <ShoppingCart className="w-6 h-6 text-white" />
           {getTotalItems() > 0 && (
             <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
               {getTotalItems()}
