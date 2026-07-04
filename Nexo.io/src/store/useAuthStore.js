@@ -1,32 +1,46 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { auth } from "../firebase";
+import {
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+} from "firebase/auth";
 
 const useAuthStore = create(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       isAuthenticated: false,
-      isAdmin: () => true,
 
-      register: (email, password, name) => {
-        const newUser = { id: Date.now(), email, name };
-        set({ user: newUser, isAuthenticated: true });
-  
-        return newUser;
+      initAuth: () => {
+        onAuthStateChanged(auth, (firebaseUser) => {
+          if (firebaseUser) {
+            set({
+              user: { id: firebaseUser.uid, email: firebaseUser.email },
+              isAuthenticated: true,
+            });
+          } else {
+            set({ user: null, isAuthenticated: false });
+          }
+        });
       },
 
-      login: (email, password) => {
-        if (email && password && password.length >= 6) {
-          const user = { id: Date.now(), email, name: email.split("@")[0] };
-          set({ user, isAuthenticated: true });
-          return true;
-        }
-        return false;
+      login: async (email, password) => {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        set({
+          user: { id: result.user.uid, email: result.user.email },
+          isAuthenticated: true,
+        });
+        return true;
       },
 
-      logout: () => set({ user: null, isAuthenticated: false }),
+      logout: async () => {
+        await signOut(auth);
+        set({ user: null, isAuthenticated: false });
+      },
     }),
-    { name: "auth-storage" }, // ← sin "storage:" custom, Zustand usa localStorage automáticamente
+    { name: "auth-storage" },
   ),
 );
 

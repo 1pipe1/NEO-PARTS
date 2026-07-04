@@ -16,29 +16,17 @@ const AuthPage = () => {
   const login = useAuthStore((state) => state.login);
   const register = useAuthStore((state) => state.register);
   const navigate = useNavigate();
-  
-  // Función para manejar el envío del formulario
-  const handleSubmit = (e) => {
-    e.preventDefault(); // Prevenir recarga de la página
-    setError(""); // Limpiar errores anteriores
 
-    if (isLogin) {
-      // Lógica de login
-      const success = login(email, password);
-      if (!success) {
-        navigate("/login");
-        setError(
-          "Credenciales inválidas. El password debe tener al menos 6 caracteres.",
-        );
-      }
-    } else {
-      // Lógica de registro
-      if (!name.trim()) {
-        setError("El nombre es requerido");
-        return;
-      }
-      register(email, password, name);
+  // Función para manejar el envío del formulario
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      await login(email, password);
       navigate("/");
+    } catch (err) {
+      setError("Credenciales inválidas. Verifica tu email y contraseña.");
     }
   };
 
