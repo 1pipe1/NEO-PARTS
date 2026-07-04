@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 
 interface OrderItem {
@@ -45,21 +45,37 @@ const SalesPage = () => {
   }).length;
   const promedio = orders.length ? totalVentas / orders.length : 0;
 
- const filtered = filterDate
-   ? orders.filter((o) => {
-       if (!o.createdAt) return false;
-       const date = o.createdAt.toDate();
-       // Formato local YYYY-MM-DD sin convertir a UTC
-       const localDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-       return localDate === filterDate;
-     })
-   : orders;
+  const filtered = filterDate
+    ? orders.filter((o) => {
+        if (!o.createdAt) return false;
+        const date = o.createdAt.toDate();
+        // Formato local YYYY-MM-DD sin convertir a UTC
+        const localDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+        return localDate === filterDate;
+      })
+    : orders;
 
   const totalPages = Math.ceil(filtered.length / ORDERS_PER_PAGE);
   const paginated = filtered.slice(
     (currentPage - 1) * ORDERS_PER_PAGE,
     currentPage * ORDERS_PER_PAGE,
   );
+
+  const handleCancelOrder = async (orderId: string) => {
+    const confirmed = window.confirm(
+      "¿Estás seguro de que deseas cancelar esta orden?",
+    );
+    if (!confirmed) return;
+
+    try {
+      await updateDoc(doc(db, "orders", orderId), {
+        status: "cancelled",
+      });
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      alert("Error al cancelar la orden. Intenta nuevamente.");
+    }
+  };
 
   return (
     <div>
@@ -149,17 +165,33 @@ const SalesPage = () => {
                       ${o.total?.toFixed(0)}
                     </td>
                     <td className="py-3">
-                      <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">
-                        {o.status || "Completada"}
-                      </span>
+                      {o.status === "cancelled" ? (
+                        <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-medium">
+                          ❌ Cancelada
+                        </span>
+                      ) : (
+                        <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">
+                          ✅ Completada
+                        </span>
+                      )}
                     </td>
                     <td className="py-3">
-                      <button
-                        onClick={() => setSelectedOrder(o)}
-                        className="text-xs text-orange-500 hover:text-orange-600 font-semibold transition-colors"
-                      >
-                        Ver detalle →
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setSelectedOrder(o)}
+                          className="text-xs text-orange-500 hover:text-orange-600 font-semibold transition-colors"
+                        >
+                          Ver detalle →
+                        </button>
+                        {o.status === "completed" && (
+                          <button
+                            onClick={() => handleCancelOrder(o.id)}
+                            className="text-xs text-red-500 hover:text-red-600 font-semibold transition-colors"
+                          >
+                            Cancelar
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -217,10 +249,15 @@ const SalesPage = () => {
                   #{selectedOrder.id.slice(0, 8)}...
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {selectedOrder.userEmail}
+                  {(selectedOrder as any).customerName ||
+                    selectedOrder.userEmail ||
+                    "—"}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {selectedOrder.createdAt.toDate().toISOString().split("T")[0]}
+                  {selectedOrder.createdAt.toDate().toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Vendido por: {(selectedOrder as any).soldBy || "—"}
                 </p>
               </div>
               <button
@@ -244,7 +281,9 @@ const SalesPage = () => {
                       />
                     )}
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{item.name}</p>
+                      <p className="text-sm font-medium">
+                        {item.name || "Producto"}
+                      </p>
                       <p className="text-xs text-gray-400">
                         {item.quantity} × ${item.price?.toFixed(0)}
                       </p>
