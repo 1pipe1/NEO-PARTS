@@ -4,9 +4,8 @@ import useAuthStore from "../store/useAuthStore";
 import { Navigate } from "react-router-dom";
 
 const AdminLayout = () => {
-  const { user, isAdmin } = useAuthStore();
-
-  if (!user || !isAdmin()) return <Navigate to="/" />;
+  const { isAuthenticated } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" />;
 
   return (
     <div className="flex min-h-screen">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import { getAuth } from "firebase/auth";
 import useStockStore from "../store/useStockStore";
 
 const DashboardPage = () => {
@@ -8,6 +9,7 @@ const DashboardPage = () => {
   const fetchProducts = useStockStore((state) => state.fetchProducts);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const auth = getAuth();
 
   useEffect(() => {
     const loadData = async () => {
