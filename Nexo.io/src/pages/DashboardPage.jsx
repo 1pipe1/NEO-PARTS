@@ -32,14 +32,14 @@ const DashboardPage = () => {
 
   const metrics = [
     {
-      label: "Total Ventas",
+      label: "Historico Ventas",
       value: orders.length,
       icon: "🧾",
       color: "bg-blue-500",
     },
     {
       label: "Ingresos Totales",
-      value: `$${totalRevenue.toFixed(2)}`,
+      value: `$${totalRevenue.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`,
       icon: "💰",
       color: "bg-green-500",
     },
@@ -51,7 +51,7 @@ const DashboardPage = () => {
     },
     {
       label: "Valor Inventario",
-      value: `$${inventoryValue.toFixed(2)}`,
+      value: `$${inventoryValue.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`,
       icon: "🏪",
       color: "bg-purple-500",
     },

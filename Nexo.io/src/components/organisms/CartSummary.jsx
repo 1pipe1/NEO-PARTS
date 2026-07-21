@@ -31,8 +31,8 @@ const CartSummary = ({ onCheckout }) => {
           className="flex justify-between items-center mb-2 p-3 bg-slate-50 border border-slate-100 rounded-lg text-sm"
         >
           <div className="flex-1">
-            <p className="text-[#0F172A] font-medium">{item.name}</p>
-            <p className="text-[#0F172A] text-gray-600">
+            <p className="text-[#0F172A] font-normal">{item.name}</p>
+            <p className="text-[#0F172A] text-slate-500">
               Cantidad: {item.quantity} × ${item.price}
             </p>
           </div>

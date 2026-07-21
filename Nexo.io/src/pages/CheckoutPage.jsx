@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useCartStore from "../store/useCartStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   collection,
   addDoc,
@@ -8,36 +8,80 @@ import {
   doc,
   getDoc,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import useAuthStore from "../store/useAuthStore";
 
+
 const CheckoutPage = () => {
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [customerName, setCustomerName] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const resumeId = params.get("resumeId");
+
   const user = useAuthStore((state) => state.user);
   const cart = useCartStore((state) => state.cart);
   const getTotalPrice = useCartStore((state) => state.getTotalPrice);
   const clearCart = useCartStore((state) => state.clearCart);
+  const setCart = useCartStore((state) => state.setCart);
+  const activeDraftId = useCartStore((state) => state.activeDraftId);
+  const clearActiveDraftId = useCartStore((state) => state.clearActiveDraftId);
   const totalPrice = getTotalPrice();
+
+  useEffect(() => {
+    // Si venimos reanudando una venta, cargar el draft en el carrito
+    if (!resumeId) return;
+    const loadDraft = async () => {
+      try {
+        const draftRef = doc(db, "draftOrders", resumeId);
+        const snap = await getDoc(draftRef);
+        if (snap.exists()) {
+          const data = snap.data();
+          const items = (data.items || []).map((it) => ({
+            id: it.id,
+            title: it.title || it.name,
+            price: it.price || 0,
+            image: it.image || "",
+            quantity: it.quantity || 1,
+          }));
+          setCart(items);
+        }
+      } catch (e) {
+        console.error("Error loading draft for resume:", e);
+      }
+    };
+    loadDraft();
+  }, [resumeId, setCart]);
+
+  useEffect(() => {
+    if (!activeDraftId || cart.length > 0) return;
+
+    const cleanupDraft = async () => {
+      try {
+        await deleteDoc(doc(db, "draftOrders", activeDraftId));
+      } catch (error) {
+        console.error("Error deleting resumed draft after cart was cleared:", error);
+      } finally {
+        clearActiveDraftId();
+      }
+    };
+
+    cleanupDraft();
+  }, [activeDraftId, cart.length, clearActiveDraftId]);
 
   const handleConfirmPurchase = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (!customerName.trim()) {
-      setError("El nombre del cliente es requerido");
-      return;
-    }
-
     setLoading(true);
     try {
       await addDoc(collection(db, "orders"), {
-        customerName: customerName.trim(),
+        customerName: "" || "Cliente",
         paymentMethod,
         items: cart.map((item) => ({
           id: item.id,
@@ -45,7 +89,7 @@ const CheckoutPage = () => {
           price: item.price,
           quantity: item.quantity,
           image: item.image,
-          customerName: customerName.trim(),
+          customerName: "" || "Cliente",
           soldBy: user?.email || "guest",
         })),
         total: totalPrice,
@@ -57,11 +101,25 @@ const CheckoutPage = () => {
         const productRef = doc(db, "products", item.id);
         const productSnapshot = await getDoc(productRef);
         const productData = productSnapshot.data();
+
         await updateDoc(productRef, {
-          stock: productData.stock - item.quantity,
+          stock:
+            productData.stock >= item.quantity
+              ? productData.stock - item.quantity
+              : 0,
         });
       }
 
+      // Si venimos reanudando una venta, borrar el draft correspondiente
+      if (resumeId) {
+        try {
+          await deleteDoc(doc(db, "draftOrders", resumeId));
+        } catch (e) {
+          console.error("Error deleting draft after completing order:", e);
+        }
+      }
+
+      clearActiveDraftId();
       clearCart();
       setPurchaseSuccess(true);
     } catch (error) {
@@ -71,6 +129,54 @@ const CheckoutPage = () => {
       setLoading(false);
     }
   };
+
+  const handleSuspendSale = async () => {
+    setError("");
+
+    if (cart.length === 0) {
+      setError("No hay productos en el carrito");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "draftOrders"), {
+        customerName: "".trim() || "",
+        paymentMethod,
+        items: cart.map((item) => ({
+          id: item.id,
+          title: item.title || item.name,
+          price: item.price,
+          quantity: item.quantity,
+          image: item.image || "",
+        })),
+        total: totalPrice,
+        status: "suspended",
+        createdBy: user?.email || "guest",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      if (activeDraftId) {
+        try {
+          await deleteDoc(doc(db, "draftOrders", activeDraftId));
+        } catch (error) {
+          console.error("Error deleting previous resumed draft:", error);
+        }
+      }
+
+      clearActiveDraftId();
+      clearCart();
+      navigate("/admin/drafts");
+    } catch (error) {
+      setError("No se pudo suspender la venta.");
+      console.error("Error suspending sale:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   // ✅ Pantalla de éxito — clara y cálida
   if (purchaseSuccess) {
@@ -83,9 +189,6 @@ const CheckoutPage = () => {
           </h2>
           <p className="text-gray-600 text-lg mb-2">
             Tu compra fue procesada con éxito.
-          </p>
-          <p className="text-gray-400 text-sm mb-8">
-            Pronto nos pondremos en contacto contigo.
           </p>
           <button
             onClick={() => navigate("/")}
@@ -131,21 +234,6 @@ const CheckoutPage = () => {
 
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-4">
           <form onSubmit={handleConfirmPurchase} className="space-y-6">
-            {/* Nombre del cliente */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nombre del cliente *
-              </label>
-              <input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-                placeholder="Ej: Juan Pérez"
-                required
-              />
-            </div>
-
             {/* Método de pago */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -174,7 +262,7 @@ const CheckoutPage = () => {
                   }`}
                 >
                   <div className="text-2xl mb-1">🏦</div>
-                  <div className="font-medium">Transferencia</div>
+                  <div className="font-medium">Bre-b</div>
                 </button>
               </div>
             </div>
@@ -243,6 +331,14 @@ const CheckoutPage = () => {
               className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-bold py-4 rounded-xl text-xl transition-colors mb-3"
             >
               {loading ? "Procesando..." : "✅ Confirmar pedido"}
+            </button>
+            <button
+              type="button"
+              onClick={handleSuspendSale}
+              disabled={loading}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 disabled:bg-yellow-300 text-white font-bold py-4 rounded-xl text-xl transition-colors mb-3"
+            >
+              ⏸️ Suspender venta
             </button>
 
             {/* Botón cancelar */}

@@ -33,8 +33,7 @@ const Navbar = ({ search, onSearchChange, onCheckout }) => {
               onClick={() => navigate("/admin")}
               className="flex items-center gap-1 text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors"
             >
-              <Settings className="w-4 h-4" />
-              Admin
+              <span className="font-bold text-black">MiNegocio</span>
             </button>
           )}
 

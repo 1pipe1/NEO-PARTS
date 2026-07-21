@@ -86,7 +86,7 @@ const SalesPage = () => {
         <div className="bg-white rounded-xl shadow p-5">
           <p className="text-gray-500 text-sm">Total ventas</p>
           <p className="text-2xl md:text-3xl font-bold text-green-600">
-            ${totalVentas.toFixed(0)}
+            ${totalVentas.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
           </p>
         </div>
         <div className="bg-white rounded-xl shadow p-5">
@@ -98,7 +98,7 @@ const SalesPage = () => {
         <div className="bg-white rounded-xl shadow p-5">
           <p className="text-gray-500 text-sm">Promedio por orden</p>
           <p className="text-2xl md:text-3xl font-bold text-purple-600">
-            ${promedio.toFixed(0)}
+            ${promedio.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".") || 0}
           </p>
         </div>
       </div>
@@ -132,13 +132,12 @@ const SalesPage = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[500px]">
+          <table className="w-full text-sm min-w-[=500px]">
             <thead>
               <tr className="text-left text-gray-500 border-b">
-                <th className="pb-3">ID</th>
-                <th className="pb-3">Cliente</th>
+                <th className="pb-3">Hora</th>
                 <th className="pb-3">Total</th>
-                <th className="pb-3">Estado</th>
+                <th className="pb-3">Realizado</th>
                 <th className="pb-3"></th>
               </tr>
             </thead>
@@ -153,25 +152,24 @@ const SalesPage = () => {
                 </tr>
               ) : (
                 paginated.map((o) => (
-                  <tr
-                    key={o.id}
-                    className="border-t hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="py-3 text-xs text-gray-400">
-                      {o.id.slice(0, 8)}...
+                  <tr>
+                    <td className="py-3">
+                      {o.createdAt.toDate().toLocaleString()}
                     </td>
-                    <td className="py-3">{o.userEmail || "—"}</td>
                     <td className="py-3 font-semibold text-green-600">
-                      ${o.total?.toFixed(0)}
+                      $
+                      {o.total
+                        ?.toFixed(0)
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".") || 0}
                     </td>
                     <td className="py-3">
                       {o.status === "cancelled" ? (
                         <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-medium">
-                          ❌ Cancelada
+                          ❌
                         </span>
                       ) : (
                         <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">
-                          ✅ Completada
+                          ✅
                         </span>
                       )}
                     </td>
@@ -245,9 +243,7 @@ const SalesPage = () => {
             <div className="p-5 border-b flex justify-between items-start">
               <div>
                 <h3 className="font-bold text-lg">Detalle de orden</h3>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  #{selectedOrder.id.slice(0, 8)}...
-                </p>
+                <p className="text-xs text-gray-400 mt-0.5"></p>
                 <p className="text-sm text-gray-500 mt-1">
                   {(selectedOrder as any).customerName ||
                     selectedOrder.userEmail ||
@@ -255,9 +251,6 @@ const SalesPage = () => {
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
                   {selectedOrder.createdAt.toDate().toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Vendido por: {(selectedOrder as any).soldBy || "—"}
                 </p>
               </div>
               <button
@@ -282,14 +275,17 @@ const SalesPage = () => {
                     )}
                     <div className="flex-1">
                       <p className="text-sm font-medium">
-                        {item.name || "Producto"}
+                        {item.name || "Producto sin nombre"}
                       </p>
                       <p className="text-xs text-gray-400">
                         {item.quantity} × ${item.price?.toFixed(0)}
                       </p>
                     </div>
                     <p className="text-sm font-semibold text-green-600">
-                      ${(item.price * item.quantity).toFixed(0)}
+                      $
+                      {(item.price * item.quantity)
+                        .toFixed(0)
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                     </p>
                   </div>
                 ))
@@ -304,7 +300,10 @@ const SalesPage = () => {
             <div className="p-5 border-t flex justify-between items-center">
               <span className="font-semibold text-gray-700">Total</span>
               <span className="text-xl font-bold text-green-600">
-                ${selectedOrder.total?.toFixed(0)}
+                $
+                {selectedOrder.total
+                  ?.toFixed(0)
+                  .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
               </span>
             </div>
           </div>

@@ -3,7 +3,7 @@ const Price = ({ amount }) => {
   const safeAmount = amount || 0;
 
   return (
-    <p className="mt-2 text-green-600 font-bold">${Number(safeAmount).toFixed(2)}</p>
+    <p className="mt-2 text-black font-bold">${Number(safeAmount).toFixed(0)}</p>
   );
 };
 

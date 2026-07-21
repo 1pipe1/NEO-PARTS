@@ -18,7 +18,7 @@ const ProductCard = ({ product }) => {
           className="max-h-full max-w-full object-contain"
         />
       </div>
-      <h2 className="text-xl font-bold mb-3 text-[#0F172A] h-12 line-clamp-2">
+      <h2 className="text-lg font-bold mb-3 text-[#0F172A] h-13 line-clamp-3">
         {product.title}
       </h2>
       <p className="text-sm text-gray-600 mb-4">{product.category}</p>
