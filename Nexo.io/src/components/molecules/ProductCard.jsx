@@ -13,7 +13,7 @@ const ProductCard = ({ product }) => {
     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 h-full flex flex-col text-center">
       <div className="h-48 flex items-center justify-center mb-4">
         <img
-          src={product.image}
+          src={product.image || null}
           alt={product.title}
           className="max-h-full max-w-full object-contain"
         />

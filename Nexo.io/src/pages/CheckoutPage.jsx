@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import useAuthStore from "../store/useAuthStore";
+import CashPaymentModal from "../components/organisms/CashPaymentModal";
 
 
 const CheckoutPage = () => {
@@ -19,6 +20,7 @@ const CheckoutPage = () => {
   const [loading, setLoading] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [error, setError] = useState("");
+  const [showCashModal, setShowCashModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const params = new URLSearchParams(location.search);
@@ -74,15 +76,20 @@ const CheckoutPage = () => {
     cleanupDraft();
   }, [activeDraftId, cart.length, clearActiveDraftId]);
 
-  const handleConfirmPurchase = async (e) => {
-    e.preventDefault();
+  const finalizePurchase = async (cashPaidAmount = null) => {
     setError("");
-
     setLoading(true);
     try {
+      if (paymentMethod === "cash" && cashPaidAmount !== null && cashPaidAmount < totalPrice) {
+        setError("El monto recibido no alcanza el total");
+        return;
+      }
+
       await addDoc(collection(db, "orders"), {
         customerName: "" || "Cliente",
         paymentMethod,
+        cashPaid: paymentMethod === "cash" ? cashPaidAmount : null,
+        change: paymentMethod === "cash" && cashPaidAmount !== null ? cashPaidAmount - totalPrice : 0,
         items: cart.map((item) => ({
           id: item.id,
           title: item.title || item.name,
@@ -127,7 +134,20 @@ const CheckoutPage = () => {
       console.error("Error saving order:", error);
     } finally {
       setLoading(false);
+      setShowCashModal(false);
     }
+  };
+
+  const handleConfirmPurchase = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (paymentMethod === "cash") {
+      setShowCashModal(true);
+      return;
+    }
+
+    await finalizePurchase();
   };
 
   const handleSuspendSale = async () => {
@@ -283,7 +303,7 @@ const CheckoutPage = () => {
                 >
                   {/* Imagen del producto */}
                   <img
-                    src={item.image}
+                    src={item.image || null}
                     alt={item.title || item.name}
                     className="w-16 h-16 object-contain rounded-lg bg-white border border-gray-100"
                   />
@@ -332,6 +352,13 @@ const CheckoutPage = () => {
             >
               {loading ? "Procesando..." : "✅ Confirmar pedido"}
             </button>
+
+            <CashPaymentModal
+              isOpen={showCashModal}
+              totalAmount={totalPrice}
+              onClose={() => setShowCashModal(false)}
+              onConfirm={(cashAmount) => finalizePurchase(cashAmount)}
+            />
             <button
               type="button"
               onClick={handleSuspendSale}

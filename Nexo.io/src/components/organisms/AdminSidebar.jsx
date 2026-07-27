@@ -17,7 +17,7 @@ const AdminSidebar = () => {
     { to: "/admin", label: "Dashboard", icon: "📊" },
     { to: "/admin/stock", label: "Stock", icon: "📦" },
     { to: "/admin/sales", label: "Ventas", icon: "💰" },
-    { to: "/admin/drafts", label: "Ventas suspendidas", icon: ">⏸️" },
+    { to: "/admin/drafts", label: "Ventas suspendidas", icon: "⏸️" },
   ];
 
   const [draftCount, setDraftCount] = useState(0);
@@ -68,15 +68,15 @@ const AdminSidebar = () => {
               }
             >
               <span className="flex items-center gap-2">
-                <span>{link.icon}</span>
-                <span className="flex items-center gap-2">
-                  <span>{link.label}</span>
+                <span className="relative inline-flex items-center justify-center">
+                  <span>{link.icon}</span>
                   {link.to === "/admin/drafts" && draftCount > 0 && (
-                    <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded-full bg-red-600 text-white">
+                    <span className="absolute -top-1 -right-2 min-w-[1.1rem] h-4 text-[9px] leading-none inline-flex items-center justify-center rounded-full bg-red-600 text-white px-[0.25rem]">
                       {draftCount}
                     </span>
                   )}
                 </span>
+                <span>{link.label}</span>
               </span>
             </NavLink>
           ))}
@@ -112,15 +112,15 @@ const AdminSidebar = () => {
               }`
             }
           >
-            <span className="text-xl mb-0.5">{link.icon}</span>
-            <span className="flex items-center gap-1">
-              <span className="text-xs">{link.label}</span>
+            <span className="relative text-xl mb-0.5 inline-flex items-center justify-center">
+              {link.icon}
               {link.to === "/admin/drafts" && draftCount > 0 && (
-                <span className="ml-1 inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium rounded-full bg-red-600 text-white">
+                <span className="absolute -top-1 -right-2 min-w-[1.1rem] h-4 text-[9px] leading-none inline-flex items-center justify-center rounded-full bg-red-600 text-white px-[0.25rem]">
                   {draftCount}
                 </span>
               )}
             </span>
+            <span className="text-xs">{link.label}</span>
           </NavLink>
         ))}
 

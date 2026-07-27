@@ -32,7 +32,7 @@ const CartSummary = ({ onCheckout }) => {
         >
           <div className="flex-1">
             <p className="text-[#0F172A] font-normal">{item.name}</p>
-            <p className="text-[#0F172A] text-slate-500">
+            <p className="text-[#0F172A]text-slate-500">
               Cantidad: {item.quantity} × ${item.price}
             </p>
           </div>

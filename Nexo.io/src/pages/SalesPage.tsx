@@ -4,7 +4,8 @@ import { db } from "../firebase";
 
 interface OrderItem {
   id: string;
-  name: string;
+  name?: string;
+  title?: string;
   price: number;
   quantity: number;
   image?: string;
@@ -21,10 +22,20 @@ interface Order {
 
 const ORDERS_PER_PAGE = 10;
 
+const getLocalDateString = (value: Date) => {
+  return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, "0")}-${String(value.getDate()).padStart(2, "0")}`;
+};
+
+const getOrderDate = (createdAt: any) => {
+  if (!createdAt?.toDate) return null;
+  return createdAt.toDate();
+};
+
 const SalesPage = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filterDate, setFilterDate] = useState("");
+  const [viewMode, setViewMode] = useState<"all" | "today">("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   useEffect(() => {
@@ -39,21 +50,33 @@ const SalesPage = () => {
   }, []);
 
   const totalVentas = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+  const todayString = getLocalDateString(new Date());
   const ordenesHoy = orders.filter((o) => {
-    if (!o.createdAt) return false;
-    return o.createdAt.toDate().toDateString() === new Date().toDateString();
+    const date = getOrderDate(o.createdAt);
+    if (!date) return false;
+    return getLocalDateString(date) === todayString;
   }).length;
   const promedio = orders.length ? totalVentas / orders.length : 0;
 
-  const filtered = filterDate
-    ? orders.filter((o) => {
-        if (!o.createdAt) return false;
-        const date = o.createdAt.toDate();
-        // Formato local YYYY-MM-DD sin convertir a UTC
-        const localDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-        return localDate === filterDate;
-      })
-    : orders;
+  const filtered = orders
+    .filter((o) => {
+      const date = getOrderDate(o.createdAt);
+      if (!date) return false;
+
+      const localDate = getLocalDateString(date);
+
+      if (filterDate && localDate !== filterDate) return false;
+      if (viewMode === "today") {
+        return localDate === todayString;
+      }
+
+      return true;
+    })
+    .sort((a, b) => {
+      const aTime = getOrderDate(a.createdAt)?.getTime?.() || 0;
+      const bTime = getOrderDate(b.createdAt)?.getTime?.() || 0;
+      return bTime - aTime;
+    });
 
   const totalPages = Math.ceil(filtered.length / ORDERS_PER_PAGE);
   const paginated = filtered.slice(
@@ -107,7 +130,36 @@ const SalesPage = () => {
       <div className="bg-white rounded-xl shadow p-4 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <h2 className="text-lg font-semibold">Órdenes recientes</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center rounded-lg border border-gray-200 p-1">
+              <button
+                onClick={() => {
+                  setViewMode("all");
+                  setCurrentPage(1);
+                }}
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  viewMode === "all"
+                    ? "bg-orange-500 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Todas
+              </button>
+              <button
+                onClick={() => {
+                  setViewMode("today");
+                  setCurrentPage(1);
+                }}
+                className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  viewMode === "today"
+                    ? "bg-orange-500 text-white"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                Hoy
+              </button>
+            </div>
+
             <input
               type="date"
               value={filterDate}
@@ -117,10 +169,11 @@ const SalesPage = () => {
               }}
               className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
-            {filterDate && (
+            {(filterDate || viewMode === "today") && (
               <button
                 onClick={() => {
                   setFilterDate("");
+                  setViewMode("all");
                   setCurrentPage(1);
                 }}
                 className="text-xs text-gray-400 hover:text-red-500 transition-colors"
@@ -154,7 +207,7 @@ const SalesPage = () => {
                 paginated.map((o) => (
                   <tr>
                     <td className="py-3">
-                      {o.createdAt.toDate().toLocaleString()}
+                      {getOrderDate(o.createdAt)?.toLocaleString() || "—"}
                     </td>
                     <td className="py-3 font-semibold text-green-600">
                       $
@@ -164,11 +217,11 @@ const SalesPage = () => {
                     </td>
                     <td className="py-3">
                       {o.status === "cancelled" ? (
-                        <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-medium">
+                        <span className="bg-red-100 text-red-700 text-xs px-2 py-1 rounded-full font-medium justify-center items-center flex">
                           ❌
                         </span>
                       ) : (
-                        <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium">
+                        <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-medium justify-center items-center flex">
                           ✅
                         </span>
                       )}
@@ -179,7 +232,7 @@ const SalesPage = () => {
                           onClick={() => setSelectedOrder(o)}
                           className="text-xs text-orange-500 hover:text-orange-600 font-semibold transition-colors"
                         >
-                          Ver detalle →
+                          Detalle Orden →
                         </button>
                         {o.status === "completed" && (
                           <button
@@ -250,7 +303,7 @@ const SalesPage = () => {
                     "—"}
                 </p>
                 <p className="text-sm text-gray-500 mt-1">
-                  {selectedOrder.createdAt.toDate().toLocaleString()}
+                  {getOrderDate(selectedOrder.createdAt)?.toLocaleString() || "—"}
                 </p>
               </div>
               <button
@@ -264,31 +317,33 @@ const SalesPage = () => {
             {/* Items */}
             <div className="p-5 flex flex-col gap-3">
               {selectedOrder.items?.length ? (
-                selectedOrder.items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3">
-                    {item.image && (
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-12 h-12 object-contain rounded-lg border border-gray-100"
-                      />
-                    )}
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">
-                        {item.name || "Producto sin nombre"}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {item.quantity} × ${item.price?.toFixed(0)}
-                      </p>
-                    </div>
-                    <p className="text-sm font-semibold text-green-600">
-                      $
-                      {(item.price * item.quantity)
-                        .toFixed(0)
-                        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
-                    </p>
-                  </div>
-                ))
+                selectedOrder.items.map((item) => {
+                 const itemName = item.title || item.name || "Producto sin nombre";
+
+                 return (
+                   <div key={item.id} className="flex items-center gap-3">
+                     {item.image && (
+                       <img
+                         src={item.image}
+                         alt={itemName}
+                         className="w-12 h-12 object-contain rounded-lg border border-gray-100"
+                       />
+                     )}
+                     <div className="flex-1">
+                       <p className="text-sm font-medium">{itemName}</p>
+                       <p className="text-xs text-gray-400">
+                         {item.quantity} × ${item.price?.toFixed(0)}
+                       </p>
+                     </div>
+                     <p className="text-sm font-semibold text-green-600">
+                       $
+                       {(item.price * item.quantity)
+                         .toFixed(0)
+                         .replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                     </p>
+                   </div>
+                 );
+               })
               ) : (
                 <p className="text-sm text-gray-400 text-center py-4">
                   No hay items registrados

@@ -72,8 +72,7 @@ const SuspendedSalesPage = () => {
     <div className="p-6">
       <h1 className="text-2xl font-bold">⏸️ Ventas suspendidas</h1>
       <p className="text-gray-600 mt-2 mb-6">
-        A continuación se muestran las ventas pausadas. Podés reanudar la venta
-        o cancelarla.
+       Podés reanudar la venta suspendida o también puedes cancelarla.
       </p>
 
       {drafts.length === 0 ? (
@@ -111,7 +110,7 @@ const SuspendedSalesPage = () => {
                         className="flex items-center gap-3 p-2 rounded-lg bg-gray-50"
                       >
                         <img
-                          src={item.image || ""}
+                          src={item.image || null}
                           alt={item.title || item.name}
                           className="w-12 h-12 object-contain rounded"
                         />
@@ -140,7 +139,7 @@ const SuspendedSalesPage = () => {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => handleResume(draft)}
-                      className="px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold"
+                      className="px-2 py-1 bg-green-600 hover:bg-green-400 text-white rounded-lg font-semibold"
                     >
                       Continuar venta
                     </button>
@@ -148,15 +147,15 @@ const SuspendedSalesPage = () => {
                     <button
                       onClick={() => handleCancel(draft.id)}
                       disabled={loading}
-                      className="px-1.5 py-0.8 bg-red-600 hover:bg-red-400 text-white rounded-xl font-semibold"
+                      className="px-2 py-1 bg-red-600 hover:bg-red-400 text-white rounded-lg font-semibold"
                     >
                       {loading ? "Cancelando..." : "Cancelar orden"}
                     </button>
                   </div>
 
                   <div className="text-right">
-                    <div className="text-sm text-gray-500">Total</div>
-                    <div className="font-bold text-orange-500">
+                    <div className="text-sm text-gray-600">Total</div>
+                    <div className="font-bold  text-orange-500">
                       ${(draft.total || 0).toLocaleString()}
                     </div>
                   </div>

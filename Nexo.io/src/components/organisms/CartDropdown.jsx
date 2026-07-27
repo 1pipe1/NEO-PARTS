@@ -2,11 +2,19 @@ import useCartStore from "../../store/useCartStore";
 
 const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
   const cart = useCartStore((state) => state.cart);
+  const activeDraftId = useCartStore((state) => state.activeDraftId);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
   const clearCart = useCartStore((state) => state.clearCart);
+  const clearActiveDraftId = useCartStore((state) => state.clearActiveDraftId);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
 
   const total = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const hasActiveDraft = Boolean(activeDraftId);
+
+  const handleClearCart = () => {
+    clearCart();
+    clearActiveDraftId();
+  };
 
   if (!isOpen) return null;
 
@@ -37,6 +45,13 @@ const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
 
         {/* Contenido scrolleable */}
         <div className="flex-1 overflow-y-auto p-5">
+          {hasActiveDraft && (
+            <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 text-shadow-lg text-amber-800">
+              <div className="font-semibold">VENTA SUSPENDIDA REANUDADA</div>
+              <div className="mt-1">Si el cliente no compra nada, vaciar el carrito quitará este aviso.</div>
+            </div>
+          )}
+
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center py-16">
               <div className="text-6xl mb-4">🛒</div>
@@ -56,7 +71,7 @@ const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
                 >
                   {/* Imagen */}
                   <img
-                    src={item.image}
+                    src={item.image || null}
                     alt={item.title || item.name}
                     className="w-14 h-14 object-contain rounded-lg bg-white border border-gray-100 shrink-0"
                   />
@@ -109,7 +124,7 @@ const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
             </button>
 
             <button
-              onClick={clearCart}
+              onClick={handleClearCart}
               className="w-full bg-gray-100 hover:bg-gray-200 text-gray-500 font-medium py-2 rounded-xl transition-colors text-sm"
             >
               Vaciar carrito
