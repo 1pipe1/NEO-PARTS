@@ -8,40 +8,47 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import useStockStore from "../store/useStockStore";
+import type { Product } from "../types/product";
 
-const emptyForm = { title: "", category: "", price: "", stock: "", image: "" };
+const emptyForm = {
+  title: "",
+  category: "",
+  price: "",
+  stock: "",
+  image: "",
+};
 
+type StockForm = typeof emptyForm;
 const StockPage = () => {
   const products = useStockStore((state) => state.products);
   const fetchProducts = useStockStore((state) => state.fetchProducts);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [form, setForm] = useState(emptyForm);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [form, setForm] = useState<StockForm>(emptyForm);
 
   useEffect(() => {
     fetchProducts().then(() => setLoading(false));
-  }, []);
-
-  const handleEdit = (product) => {
+  }, [fetchProducts]);
+  const handleEdit = (product: Product) => {
     setEditingProduct(product);
     setForm({
-      title: product.title,
-      category: product.category,
-      price: product.price,
-      stock: product.stock,
-      image: product.image,
+      title: product.title ?? "",
+      category: product.category ?? "",
+      price: String(product.price ?? 0),
+      stock: String(product.stock),
+      image: product.image ?? "",
     });
     setShowForm(true);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("¿Eliminar este producto?")) return;
     await deleteDoc(doc(db, "products", id));
     fetchProducts();
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = {
       title: form.title,
