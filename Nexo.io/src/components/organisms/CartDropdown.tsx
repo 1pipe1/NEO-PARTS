@@ -1,6 +1,16 @@
 import useCartStore from "../../store/useCartStore";
 
-const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
+type CartDropdownProps = {
+  isOpen: boolean;
+  onClose: () => void;
+  onCheckout: () => void;
+};
+
+const CartDropdown = ({
+  isOpen,
+  onClose,
+  onCheckout,
+}: CartDropdownProps) => {
   const cart = useCartStore((state) => state.cart);
   const activeDraftId = useCartStore((state) => state.activeDraftId);
   const removeFromCart = useCartStore((state) => state.removeFromCart);
@@ -20,15 +30,12 @@ const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
 
   return (
     <div className="fixed inset-0 z-50">
-      {/* Overlay */}
       <div
         className="absolute inset-0 bg-black bg-opacity-40"
         onClick={onClose}
       />
 
-      {/* Panel */}
       <div className="absolute right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col">
-        {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-5 py-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-gray-800">
             🛒 Mi carrito{" "}
@@ -43,12 +50,13 @@ const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
           </button>
         </div>
 
-        {/* Contenido scrolleable */}
         <div className="flex-1 overflow-y-auto p-5">
           {hasActiveDraft && (
             <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 px-3 py-3 text-shadow-lg text-amber-800">
               <div className="font-semibold">VENTA SUSPENDIDA REANUDADA</div>
-              <div className="mt-1">Si el cliente no compra nada, vaciar el carrito quitará este aviso.</div>
+              <div className="mt-1">
+                Si el cliente no compra nada, vaciar el carrito quitará este aviso.
+              </div>
             </div>
           )}
 
@@ -69,14 +77,12 @@ const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
                   key={item.id}
                   className="bg-orange-50 border border-orange-100 p-3 rounded-xl flex items-center gap-3"
                 >
-                  {/* Imagen */}
                   <img
-                    src={item.image || null}
+                    src={item.image || ""}
                     alt={item.title || item.name}
                     className="w-14 h-14 object-contain rounded-lg bg-white border border-gray-100 shrink-0"
                   />
 
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-800 text-sm leading-tight line-clamp-2">
                       {item.title || item.name}
@@ -89,7 +95,6 @@ const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
                     </p>
                   </div>
 
-                  {/* Eliminar */}
                   <button
                     onClick={() => removeFromCart(item.id)}
                     className="text-gray-300 hover:text-red-400 text-xl shrink-0 transition-colors"
@@ -103,7 +108,6 @@ const CartDropdown = ({ isOpen, onClose, onCheckout }) => {
           )}
         </div>
 
-        {/* Footer fijo con total y botones */}
         {cart.length > 0 && (
           <div className="border-t border-gray-200 bg-white px-5 py-4 space-y-3">
             <div className="flex justify-between items-center">

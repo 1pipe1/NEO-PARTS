@@ -1,29 +1,44 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { db } from "../firebase";
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-} from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 
-// Store de Zustand para manejar el inventario de productos
-// Usa persist para guardar el inventario en localStorage
-const useStockStore = create(
+type Product = {
+  id: string;
+  name?: string;
+  title?: string;
+  price?: number;
+  stock: number;
+  category?: string;
+  image?: string;
+};
 
+type SoldItem = {
+  id: string;
+  quantity: number;
+};
+
+type StockState = {
+  products: Product[];
+  fetchProducts: () => Promise<void>;
+  updateStock: (soldItems: SoldItem[]) => Promise<void>;
+  addStock: (newProducts: Product[]) => Promise<void>;
+  getProductById: (productId: string) => Product | undefined;
+  hasStock: (productId: string, quantity?: number) => boolean;
+  getLowStockProducts: (threshold?: number) => Product[];
+};
+
+const useStockStore = create<StockState>()(
   persist(
     (set, get) => ({
-      // Estado inicial: lista de productos vacía
       products: [],
 
-      // Acción fetchProducts: Para traer la data inicial desde Firebase
       fetchProducts: async () => {
         try {
           const querySnapshot = await getDocs(collection(db, "products"));
-          const products = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
+          const products: Product[] = querySnapshot.docs.map((docItem) => ({
+            id: docItem.id,
+            ...(docItem.data() as Omit<Product, "id">),
           }));
           set({ products });
         } catch (error) {
@@ -31,33 +46,33 @@ const useStockStore = create(
         }
       },
 
-      // Acción updateStock: Para restar productos cuando se venda algo en el carrito
-      updateStock: async (soldItems) => {
+      updateStock: async (soldItems: SoldItem[]) => {
         try {
           const currentProducts = get().products;
           const updatedProducts = currentProducts.map((product) => {
             const soldItem = soldItems.find(
               (item) => String(item.id) === String(product.id),
             );
+
             if (soldItem) {
               const newStock = product.stock - soldItem.quantity;
               return {
                 ...product,
-                stock: Math.max(0, newStock), // Evitar stock negativo
+                stock: Math.max(0, newStock),
               };
             }
+
             return product;
           });
 
-          // Actualizar estado local
           set({ products: updatedProducts });
 
-          // Opcional: Actualizar en Firebase
           for (const item of soldItems) {
             const productRef = doc(db, "products", String(item.id));
             const product = updatedProducts.find(
               (p) => String(p.id) === String(item.id),
             );
+
             if (product) {
               await updateDoc(productRef, { stock: product.stock });
             }
@@ -67,12 +82,9 @@ const useStockStore = create(
         }
       },
 
-      // Acción addStock: El puerto de entrada para los nuevos pedidos
-      addStock: async (newProducts) => {
+      addStock: async (newProducts: Product[]) => {
         try {
           const currentProducts = get().products;
-
-          // Procesar cada nuevo producto
           const updatedProducts = [...currentProducts];
 
           for (const newProduct of newProducts) {
@@ -81,21 +93,17 @@ const useStockStore = create(
             );
 
             if (existingIndex >= 0) {
-              // Si el producto existe, incrementar el stock
               updatedProducts[existingIndex] = {
                 ...updatedProducts[existingIndex],
                 stock: updatedProducts[existingIndex].stock + newProduct.stock,
               };
             } else {
-              // Si es un producto nuevo, agregarlo a la lista
               updatedProducts.push(newProduct);
             }
           }
 
-          // Actualizar estado local
           set({ products: updatedProducts });
 
-          // Opcional: Actualizar en Firebase
           for (const newProduct of newProducts) {
             const productRef = doc(db, "products", String(newProduct.id));
             const existingProduct = updatedProducts.find(
@@ -111,39 +119,24 @@ const useStockStore = create(
         }
       },
 
-      // Función auxiliar para obtener producto por ID
-      getProductById: (productId) => {
+      getProductById: (productId: string) => {
         return get().products.find(
           (product) => String(product.id) === String(productId),
         );
       },
 
-      // Función auxiliar para verificar si hay stock disponible
-      hasStock: (productId, quantity = 1) => {
+      hasStock: (productId: string, quantity = 1) => {
         const product = get().getProductById(productId);
-        return product && product.stock >= quantity;
+        return !!product && product.stock >= quantity;
       },
 
-      // Función auxiliar para obtener productos con bajo stock
       getLowStockProducts: (threshold = 5) => {
         return get().products.filter((product) => product.stock <= threshold);
       },
     }),
     {
-      // Configuración de persistencia en localStorage
       name: "stock-storage",
-      storage: {
-        getItem: (name) => {
-          const str = localStorage.getItem(name);
-          return str ? JSON.parse(str) : null;
-        },
-        setItem: (name, value) => {
-          localStorage.setItem(name, JSON.stringify(value));
-        },
-        removeItem: (name) => {
-          localStorage.removeItem(name);
-        },
-      },
+      storage: createJSONStorage(() => localStorage),
     },
   ),
 );

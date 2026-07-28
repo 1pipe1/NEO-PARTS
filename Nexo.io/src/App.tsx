@@ -23,7 +23,6 @@ function App() {
   return (
     <HashRouter>
       <Routes>
-        {" "}
         <Route
           path="/login"
           element={!isAuthenticated ? <AuthPage /> : <Navigate to="/" />}

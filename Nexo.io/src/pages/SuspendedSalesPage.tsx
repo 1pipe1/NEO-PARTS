@@ -11,8 +11,24 @@ import { db } from "../firebase";
 import useCartStore from "../store/useCartStore";
 import { useNavigate } from "react-router-dom";
 
+type DraftOrderItem = {
+  id: string;
+  title?: string;
+  name?: string;
+  price?: number;
+  quantity?: number;
+  image?: string | null;
+};
+
+type DraftOrder = {
+  id: string;
+  createdBy?: string;
+  createdAt?: { toDate?: () => Date } | string | null;
+  total?: number;
+  items?: DraftOrderItem[];
+};
 const SuspendedSalesPage = () => {
-  const [drafts, setDrafts] = useState([]);
+  const [drafts, setDrafts] = useState<DraftOrder[]>([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const setCart = useCartStore((state) => state.setCart);
@@ -26,7 +42,10 @@ const SuspendedSalesPage = () => {
     const unsub = onSnapshot(
       q,
       (snapshot) => {
-        const items = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const items: DraftOrder[] = snapshot.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        })) as DraftOrder[];
         setDrafts(items);
       },
       (err) => console.error("Error listening draftOrders:", err),
@@ -35,44 +54,43 @@ const SuspendedSalesPage = () => {
     return () => unsub();
   }, []);
 
-  const handleResume = (draft) => {
-    if (!draft?.items) return;
-    // Map items to cart format (ensure quantity exists)
-    const cartItems = draft.items.map((it) => ({
-      id: it.id,
-      title: it.title || it.name,
-      price: it.price || 0,
-      image: it.image || "",
-      quantity: it.quantity || 1,
-    }));
+const handleResume = (draft: DraftOrder) => {
+  if (!draft?.items) return;
 
-    setCart(cartItems);
-    setActiveDraftId(draft.id);
-    // Navigate back to the main products page so the cart is preserved and more products can be added
-    navigate("/");
-  };
+  const cartItems = draft.items.map((it) => ({
+    id: it.id,
+    title: it.title || it.name,
+    price: it.price ?? 0,
+    image: it.image ?? "",
+    quantity: it.quantity ?? 1,
+  }));
 
-  const handleCancel = async (draftId) => {
-    const confirm = window.confirm(
-      "¿Estás seguro? Esto cancelará la orden suspendida.",
-    );
-    if (!confirm) return;
-    setLoading(true);
-    try {
-      await deleteDoc(doc(db, "draftOrders", draftId));
-    } catch (e) {
-      console.error("Error deleting draft:", e);
-      alert("No se pudo cancelar la orden. Revisa la consola.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  setCart(cartItems);
+  setActiveDraftId(draft.id);
+  navigate("/");
+};
+
+const handleCancel = async (draftId: string) => {
+  const confirmCancel = window.confirm(
+    "¿Estás seguro? Esto cancelará la orden suspendida.",
+  );
+  if (!confirmCancel) return;
+  setLoading(true);
+  try {
+    await deleteDoc(doc(db, "draftOrders", draftId));
+  } catch (e) {
+    console.error("Error deleting draft:", e);
+    alert("No se pudo cancelar la orden. Revisa la consola.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold">⏸️ Ventas suspendidas</h1>
       <p className="text-gray-600 mt-2 mb-6">
-       Podés reanudar la venta suspendida o también puedes cancelarla.
+        Podés reanudar la venta suspendida o también puedes cancelarla.
       </p>
 
       {drafts.length === 0 ? (
@@ -83,9 +101,9 @@ const SuspendedSalesPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {drafts.map((draft) => {
             const createdAt =
-              draft.createdAt && draft.createdAt.toDate
-                ? draft.createdAt.toDate()
-                : draft.createdAt
+              draft.createdAt && typeof draft.createdAt !== "string"
+                ? draft.createdAt.toDate?.()
+                : draft.createdAt && typeof draft.createdAt === "string"
                   ? new Date(draft.createdAt)
                   : null;
             return (

@@ -7,8 +7,8 @@ import useStockStore from "../store/useStockStore";
 import useCartStore from "../store/useCartStore";
 import { deleteDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
-
-const HomePage = () => {
+import type { FC } from "react";
+const HomePage: FC = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -77,7 +77,7 @@ const HomePage = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">
             Bienvenido,{" "}
-            <span className="text-orange-600">{user?.name || "Usuario"}</span>
+            <span className="text-orange-600">{user?.email || "Usuario"}</span>
           </h2>
 
           <button

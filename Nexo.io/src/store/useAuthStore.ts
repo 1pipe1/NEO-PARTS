@@ -7,7 +7,20 @@ import {
   onAuthStateChanged,
 } from "firebase/auth";
 
-const useAuthStore = create(
+type AuthUser = {
+  id: string;
+  email: string | null;
+};
+
+type AuthState = {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  initAuth: () => void;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+};
+
+const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
@@ -26,7 +39,7 @@ const useAuthStore = create(
         });
       },
 
-      login: async (email, password) => {
+      login: async (email: string, password: string) => {
         const result = await signInWithEmailAndPassword(auth, email, password);
         set({
           user: { id: result.user.uid, email: result.user.email },
@@ -40,8 +53,8 @@ const useAuthStore = create(
         set({ user: null, isAuthenticated: false });
       },
     }),
-    { name: "auth-storage" },
-  ),
+    { name: "auth-storage" }
+  )
 );
 
 export default useAuthStore;

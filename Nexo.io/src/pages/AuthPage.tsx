@@ -1,69 +1,41 @@
 import { useState } from "react";
 import useAuthStore from "../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
-// Página de autenticación con formularios de login y registro
-const AuthPage = () => {
-  // Estado local para controlar si mostramos formulario de login o registro
-  const [isLogin, setIsLogin] = useState(true);
 
-  // Estados para los campos del formulario
+const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [error, setError] = useState(""); // Para mostrar mensajes de error
+  const [error, setError] = useState("");
 
-  // Obtener funciones del store de autenticación
   const login = useAuthStore((state) => state.login);
-  const register = useAuthStore((state) => state.register);
   const navigate = useNavigate();
 
-  // Función para manejar el envío del formulario
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
     try {
       await login(email, password);
       navigate("/");
-    } catch (err) {
+    } catch {
       setError("Credenciales inválidas. Verifica tu email y contraseña.");
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
-      {/* Contenedor del formulario con estilo dark */}
       <div className="w-full max-w-md bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-700">
-        {/* Título dinámico según modo (login o registro) */}
         <h2 className="text-3xl font-bold text-center mb-6 text-orange-500">
-          {isLogin ? "Iniciar Sesión" : "Registrarse"}
+          Iniciar Sesión
         </h2>
 
-        {/* Mensaje de error si existe */}
         {error && (
           <div className="bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-lg mb-4">
             {error}
           </div>
         )}
 
-        {/* Formulario */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Campo de nombre (solo en modo registro) */}
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium mb-2 text-gray-300">
-                Nombre
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white outline-none focus:border-orange-500 transition-all"
-                placeholder="Tu nombre"
-              />
-            </div>
-          )}
-
           <div className="bg-orange-500/10 border border-orange-500/50 text-orange-500 text-[14px] py-1 px-2 rounded mb-4 text-center">
             Prueba Ingreso
             <br />
@@ -71,7 +43,7 @@ const AuthPage = () => {
             <br />
             Password: <strong>123456</strong>
           </div>
-          {/* Campo de email */}
+
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-300">
               Email
@@ -79,14 +51,15 @@ const AuthPage = () => {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
+              }
               className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white outline-none focus:border-orange-500 transition-all"
               placeholder="tu@email.com"
               required
             />
           </div>
 
-          {/* Campo de password */}
           <div>
             <label className="block text-sm font-medium mb-2 text-gray-300">
               Contraseña
@@ -94,35 +67,22 @@ const AuthPage = () => {
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setPassword(e.target.value)
+              }
               className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white outline-none focus:border-orange-500 transition-all"
               placeholder="••••••••"
               required
             />
           </div>
 
-          {/* Botón de envío del formulario */}
           <button
             type="submit"
             className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg transition-colors"
           >
-            {isLogin ? "Iniciar Sesión" : "Registrarse"}
+            Iniciar Sesión
           </button>
         </form>
-
-        {/* Enlace para cambiar entre login y registro */}
-        <p className="text-center mt-6 text-gray-400">
-          {isLogin ? "¿No tienes cuenta?" : "¿Ya tienes cuenta?"}{" "}
-          <button
-            onClick={() => {
-              setIsLogin(!isLogin); // Cambiar modo
-              setError(""); // Limpiar errores
-            }}
-            className="text-orange-500 hover:text-orange-400 font-semibold"
-          >
-            {isLogin ? "Regístrate aquí" : "Inicia sesión aquí"}
-          </button>
-        </p>
       </div>
     </div>
   );

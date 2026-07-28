@@ -13,12 +13,12 @@ import {
 import { db } from "../firebase";
 import useAuthStore from "../store/useAuthStore";
 import CashPaymentModal from "../components/organisms/CashPaymentModal";
-
+import type { FC } from "react";
 
 const CheckoutPage = () => {
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "transfer">("cash");
   const [error, setError] = useState("");
   const [showCashModal, setShowCashModal] = useState(false);
   const navigate = useNavigate();
@@ -67,7 +67,10 @@ const CheckoutPage = () => {
       try {
         await deleteDoc(doc(db, "draftOrders", activeDraftId));
       } catch (error) {
-        console.error("Error deleting resumed draft after cart was cleared:", error);
+        console.error(
+          "Error deleting resumed draft after cart was cleared:",
+          error,
+        );
       } finally {
         clearActiveDraftId();
       }
@@ -80,23 +83,30 @@ const CheckoutPage = () => {
     setError("");
     setLoading(true);
     try {
-      if (paymentMethod === "cash" && cashPaidAmount !== null && cashPaidAmount < totalPrice) {
+      if (
+        paymentMethod === "cash" &&
+        cashPaidAmount !== null &&
+        cashPaidAmount < totalPrice
+      ) {
         setError("El monto recibido no alcanza el total");
         return;
       }
 
       await addDoc(collection(db, "orders"), {
-        customerName: "" || "Cliente",
+        customerName: "Cliente",
         paymentMethod,
         cashPaid: paymentMethod === "cash" ? cashPaidAmount : null,
-        change: paymentMethod === "cash" && cashPaidAmount !== null ? cashPaidAmount - totalPrice : 0,
+        change:
+          paymentMethod === "cash" && cashPaidAmount !== null
+            ? cashPaidAmount - totalPrice
+            : 0,
         items: cart.map((item) => ({
           id: item.id,
           title: item.title || item.name,
           price: item.price,
           quantity: item.quantity,
           image: item.image,
-          customerName: "" || "Cliente",
+          customerName: "Cliente",
           soldBy: user?.email || "guest",
         })),
         total: totalPrice,
@@ -138,25 +148,25 @@ const CheckoutPage = () => {
     }
   };
 
-  const handleConfirmPurchase = async (e) => {
-    e.preventDefault();
-    setError("");
+const handleConfirmPurchase = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setError("");
 
-    if (paymentMethod === "cash") {
-      setShowCashModal(true);
-      return;
-    }
+  if (paymentMethod === "cash") {
+    setShowCashModal(true);
+    return;
+  }
 
-    await finalizePurchase();
-  };
+  await finalizePurchase();
+};
 
-  const handleSuspendSale = async () => {
-    setError("");
+const handleSuspendSale = async () => {
+  setError("");
 
-    if (cart.length === 0) {
-      setError("No hay productos en el carrito");
-      return;
-    }
+  if (cart.length === 0) {
+    setError("No hay productos en el carrito");
+    return;
+  }
 
     setLoading(true);
     try {
@@ -195,8 +205,6 @@ const CheckoutPage = () => {
       setLoading(false);
     }
   };
-
-
 
   // ✅ Pantalla de éxito — clara y cálida
   if (purchaseSuccess) {
