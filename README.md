@@ -1,6 +1,6 @@
-# 🚀 Nexo - Fullstack E-commerce Challenge
+# 🚀 TINKU - SaaS para tenderos de la economía popular****
 
-¡Bienvenido a **Nexo**! Este proyecto es el primer paso firme hacia una herramienta integral de gestión de inventario y ventas, diseñada con un enfoque práctico y profesional.
+¡Bienvenido a **TINKU**! Este proyecto es el primer paso firme hacia una herramienta integral de gestión de inventario y ventas, diseñada con un enfoque práctico y profesional.
 
 > **Propósito del proyecto:** Desarrollar una solución eficiente para el control de stock y ventas, optimizada para dispositivos móviles y escritorio, pensando en la agilidad que requiere un negocio real.
 
@@ -8,7 +8,7 @@
 
 ## 🔗 Demo en Vivo
 Puedes probar la aplicación aquí:
-👉 [**Ver Nexo en GitHub Pages**](https://1pipe1.github.io/Fullstack-Challenge-Ecommerce/)
+👉 [**Ver TINKU en GitHub Pages**](https://1pipe1.github.io/Fullstack-Challenge-Ecommerce/)
 
 *(Nota: En esta fase de prueba, puedes ingresar con cualquier correo y contraseña).*
 
