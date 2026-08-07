@@ -1,9 +1,14 @@
+import { useState } from "react";
 import Button from "../atoms/Button";
 import Price from "../atoms/Price";
 import useCartStore from "../../store/useCartStore";
-import { useState } from "react";
+import type { Product } from "../../types/product";
 
-const ProductCard = ({ product }) => {
+type ProductCardProps = {
+  product: Product;
+};
+
+const ProductCard = ({ product }: ProductCardProps) => {
   const addToCart = useCartStore((state) => state.addToCart);
   const [quantity, setQuantity] = useState(1);
 
@@ -13,18 +18,20 @@ const ProductCard = ({ product }) => {
     <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 h-full flex flex-col text-center">
       <div className="h-48 flex items-center justify-center mb-4">
         <img
-          src={product.image}
-          alt={product.title}
+          src={product.image || undefined}
+          alt={product.title ?? "Producto sin título"}
           className="max-h-full max-w-full object-contain"
         />
       </div>
-      <h2 className="text-xl font-bold mb-3 text-[#0F172A] h-12 line-clamp-2">
-        {product.title}
-      </h2>
-      <p className="text-sm text-gray-600 mb-4">{product.category}</p>
-      <Price amount={product.price} />
 
-      {/* Badge de stock 👇 */}
+      <h2 className="text-lg font-bold mb-3 text-[#0F172A] h-13 line-clamp-3">
+        {product.title ?? "Producto sin título"}
+      </h2>
+
+      <p className="text-sm text-gray-600 mb-4">{product.category ?? "Categoría no disponible"}</p>
+
+      <Price amount={product.price ?? 0} />
+
       {outOfStock ? (
         <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full mb-3">
           🚫 Agotado
@@ -35,7 +42,6 @@ const ProductCard = ({ product }) => {
         </span>
       ) : null}
 
-      {/* Selector de cantidad — deshabilitado si agotado */}
       <div className="flex items-center justify-center gap-2 mb-4">
         <button
           onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -44,7 +50,9 @@ const ProductCard = ({ product }) => {
         >
           -
         </button>
+
         <span className="text-lg font-semibold">{quantity}</span>
+
         <button
           onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
           disabled={outOfStock}
@@ -55,10 +63,8 @@ const ProductCard = ({ product }) => {
       </div>
 
       <Button
-        text={outOfStock ? "Sin stock" : "Agregar al carrito"}
+        text={outOfStock ? "Sin stock" : "Registrar"}
         onClick={() => !outOfStock && addToCart({ ...product, quantity })}
-        disabled={outOfStock}
-        className={`mt-auto ${outOfStock ? "opacity-50 cursor-not-allowed" : ""}`}
       />
     </div>
   );

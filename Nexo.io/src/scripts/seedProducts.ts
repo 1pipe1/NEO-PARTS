@@ -1,10 +1,19 @@
 import { db } from "../firebase";
 import { collection, doc, setDoc } from "firebase/firestore";
 
+type ApiProduct = {
+  id: number | string;
+  title: string;
+  price: number;
+  category: string;
+  image: string;
+  description: string;
+};
+
 const seedProducts = async () => {
   try {
     const response = await fetch("https://fakestoreapi.com/products");
-    const products = await response.json();
+    const products = (await response.json()) as ApiProduct[];
 
     for (const product of products) {
       await setDoc(doc(db, "products", String(product.id)), {
@@ -13,7 +22,7 @@ const seedProducts = async () => {
         category: product.category,
         image: product.image,
         description: product.description,
-        stock: 10, // stock inicial para todos
+        stock: 10,
       });
       console.log(`✅ Subido: ${product.title}`);
     }
@@ -24,4 +33,4 @@ const seedProducts = async () => {
   }
 };
 
-seedProducts();
+// seedProducts();

@@ -1,5 +1,8 @@
+import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/useAuthStore";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebase";
 
 const AdminSidebar = () => {
   const logout = useAuthStore((state) => state.logout);
@@ -14,7 +17,25 @@ const AdminSidebar = () => {
     { to: "/admin", label: "Dashboard", icon: "📊" },
     { to: "/admin/stock", label: "Stock", icon: "📦" },
     { to: "/admin/sales", label: "Ventas", icon: "💰" },
+    { to: "/admin/drafts", label: "Ventas suspendidas", icon: "⏸️" },
   ];
+
+  const [draftCount, setDraftCount] = useState(0);
+
+  useEffect(() => {
+    try {
+      const q = query(
+        collection(db, "draftOrders"),
+        where("status", "==", "suspended"),
+      );
+      const unsub = onSnapshot(q, (snapshot) => {
+        setDraftCount(snapshot.size);
+      });
+      return () => unsub();
+    } catch (e) {
+      console.error("Error subscribing to draftOrders:", e);
+    }
+  }, []);
 
   return (
     <>
@@ -46,7 +67,17 @@ const AdminSidebar = () => {
                 }`
               }
             >
-              {link.icon} {link.label}
+              <span className="flex items-center gap-2">
+                <span className="relative inline-flex items-center justify-center">
+                  <span>{link.icon}</span>
+                  {link.to === "/admin/drafts" && draftCount > 0 && (
+                    <span className="absolute -top-1 -right-2 min-w-[1.1rem] h-4 text-[9px] leading-none inline-flex items-center justify-center rounded-full bg-red-600 text-white px-[0.25rem]">
+                      {draftCount}
+                    </span>
+                  )}
+                </span>
+                <span>{link.label}</span>
+              </span>
             </NavLink>
           ))}
         </nav>
@@ -81,8 +112,15 @@ const AdminSidebar = () => {
               }`
             }
           >
-            <span className="text-xl mb-0.5">{link.icon}</span>
-            {link.label}
+            <span className="relative text-xl mb-0.5 inline-flex items-center justify-center">
+              {link.icon}
+              {link.to === "/admin/drafts" && draftCount > 0 && (
+                <span className="absolute -top-1 -right-2 min-w-[1.1rem] h-4 text-[9px] leading-none inline-flex items-center justify-center rounded-full bg-red-600 text-white px-[0.25rem]">
+                  {draftCount}
+                </span>
+              )}
+            </span>
+            <span className="text-xs">{link.label}</span>
           </NavLink>
         ))}
 

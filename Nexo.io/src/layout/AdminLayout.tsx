@@ -1,12 +1,13 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, Navigate } from "react-router-dom";
 import AdminSidebar from "../components/organisms/AdminSidebar";
 import useAuthStore from "../store/useAuthStore";
-import { Navigate } from "react-router-dom";
 
 const AdminLayout = () => {
-  const { user, isAdmin } = useAuthStore();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  if (!user || !isAdmin()) return <Navigate to="/" />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" />;
+  }
 
   return (
     <div className="flex min-h-screen">

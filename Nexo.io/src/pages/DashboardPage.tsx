@@ -1,23 +1,43 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import { getAuth } from "firebase/auth";
 import useStockStore from "../store/useStockStore";
+type Order = {
+  id: string;
+  total?: number;
+  createdAt?: { toDate: () => Date };
+  // puedes añadir más campos si los usas luego
+};
 
 const DashboardPage = () => {
   const products = useStockStore((state) => state.products);
   const fetchProducts = useStockStore((state) => state.fetchProducts);
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const auth = getAuth();
 
   useEffect(() => {
     const loadData = async () => {
       await fetchProducts();
       const snapshot = await getDocs(collection(db, "orders"));
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const data: Order[] = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data(),
+      })) as Order[];
       setOrders(data);
       setLoading(false);
     };
     loadData();
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "/login";
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
@@ -30,14 +50,14 @@ const DashboardPage = () => {
 
   const metrics = [
     {
-      label: "Total Ventas",
+      label: "Historico Ventas",
       value: orders.length,
       icon: "🧾",
       color: "bg-blue-500",
     },
     {
       label: "Ingresos Totales",
-      value: `$${totalRevenue.toFixed(2)}`,
+      value: `$${totalRevenue.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`,
       icon: "💰",
       color: "bg-green-500",
     },
@@ -49,7 +69,7 @@ const DashboardPage = () => {
     },
     {
       label: "Valor Inventario",
-      value: `$${inventoryValue.toFixed(2)}`,
+      value: `$${inventoryValue.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`,
       icon: "🏪",
       color: "bg-purple-500",
     },
