@@ -1,4 +1,4 @@
-# 🚀 TINKU - SaaS para tenderos de la economía popular****
+# 🚀 TINKU - SaaS para tenderos de la economía popular
 
 ¡Bienvenido a **TINKU**! Este proyecto es el primer paso firme hacia una herramienta integral de gestión de inventario y ventas, diseñada con un enfoque práctico y profesional.
 
