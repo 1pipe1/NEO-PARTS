@@ -16,8 +16,9 @@ const Navbar = ({ search, onSearchChange, onCheckout }: NavbarProps) => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const getTotalItems = useCartStore((state) => state.getTotalItems);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
-
+  const role = user?.role ?? null;
   return (
     <>
       <nav className="sticky top-0 z-50 bg-white border-b border-gray-200 px-3 md:px-8 py-4 flex items-center justify-between gap-4">
@@ -30,7 +31,7 @@ const Navbar = ({ search, onSearchChange, onCheckout }: NavbarProps) => {
         </div>
 
         <div className="flex items-center gap-4">
-          {isAuthenticated && (
+          {isAuthenticated && role === "admin" && (
             <button
               onClick={() => navigate("/admin")}
               className="flex items-center gap-1 text-sm font-semibold text-orange-500 hover:text-orange-600 transition-colors"

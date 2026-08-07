@@ -71,7 +71,7 @@ const AdminSidebar = () => {
                 <span className="relative inline-flex items-center justify-center">
                   <span>{link.icon}</span>
                   {link.to === "/admin/drafts" && draftCount > 0 && (
-                    <span className="absolute -top-1 -right-2 min-w-[1.1rem] h-4 text-[9px] leading-none inline-flex items-center justify-center rounded-full bg-red-600 text-white px-[0.25rem]">
+                    <span className="absolute -top-1 -right-2 min-w-[1.1rem] h-4 text-[9px] leading-none inline-flex items-center justify-center rounded-full bg-red-600 text-white px-1">
                       {draftCount}
                     </span>
                   )}
@@ -115,7 +115,7 @@ const AdminSidebar = () => {
             <span className="relative text-xl mb-0.5 inline-flex items-center justify-center">
               {link.icon}
               {link.to === "/admin/drafts" && draftCount > 0 && (
-                <span className="absolute -top-1 -right-2 min-w-[1.1rem] h-4 text-[9px] leading-none inline-flex items-center justify-center rounded-full bg-red-600 text-white px-[0.25rem]">
+                <span className="absolute -top-1 -right-2 min-w-[1.1rem] h-4 text-[9px] leading-none inline-flex items-center justify-center rounded-full bg-red-600 text-white px-1">
                   {draftCount}
                 </span>
               )}

@@ -10,6 +10,7 @@ import {
 type AuthUser = {
   id: string;
   email: string | null;
+  role?: "admin" | "seller" | "pending"; // optional role property
 };
 
 type AuthState = {
@@ -30,7 +31,11 @@ const useAuthStore = create<AuthState>()(
         onAuthStateChanged(auth, (firebaseUser) => {
           if (firebaseUser) {
             set({
-              user: { id: firebaseUser.uid, email: firebaseUser.email },
+              user: {
+                id: firebaseUser.uid,
+                email: firebaseUser.email,
+                role: "seller"
+              },
               isAuthenticated: true,
             });
           } else {
@@ -42,7 +47,11 @@ const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         const result = await signInWithEmailAndPassword(auth, email, password);
         set({
-          user: { id: result.user.uid, email: result.user.email },
+          user: {
+            id: result.user.uid,
+            email: result.user.email,
+            role: "seller", // temporal para pruebas
+          },
           isAuthenticated: true,
         });
         return true;
@@ -53,8 +62,8 @@ const useAuthStore = create<AuthState>()(
         set({ user: null, isAuthenticated: false });
       },
     }),
-    { name: "auth-storage" }
-  )
+    { name: "auth-storage" },
+  ),
 );
 
 export default useAuthStore;

@@ -9,6 +9,7 @@ import StockPage from "./pages/StockPage";
 import SalesPage from "./pages/SalesPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import SuspendedSalesPage from "./pages/SuspendedSalesPage";
+import ProtectedRoute from "./layout/ProductedRoute";
 
 function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -28,6 +29,20 @@ function App() {
           element={!isAuthenticated ? <AuthPage /> : <Navigate to="/" />}
         />
         <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<DashboardPage />} />
+          <Route path="stock" element={<StockPage />} />
+          <Route path="sales" element={<SalesPage />} />
+          <Route path="drafts" element={<SuspendedSalesPage />} />
+        </Route>
+
+        <Route
           path="/"
           element={isAuthenticated ? <HomePage /> : <Navigate to="/login" />}
         />
@@ -37,15 +52,9 @@ function App() {
             isAuthenticated ? <CheckoutPage /> : <Navigate to="/login" />
           }
         />
-        <Route path="/Admin" element={<AdminLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="stock" element={<StockPage />} />
-          <Route path="sales" element={<SalesPage />} />
-          <Route path="drafts" element={<SuspendedSalesPage />} />
-        </Route>
       </Routes>
     </HashRouter>
-  );
+  );                                        
 }
 
 export default App;
